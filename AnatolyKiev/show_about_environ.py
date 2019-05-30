@@ -9,7 +9,6 @@ print("\n\tShow os.environ['SHELL']")
 print("\t-->", os.environ['SHELL'])
 
 path_str = os.environ['PATH']
-# /home/anatoly/.local/bin::/home/anatoly/.local/bin:/home/anatoly/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games
 path_list = path_str.split(os.pathsep)
 # os.pathsep = ":" / ";"
 print("\n\tShow os.environ['PATH']")
