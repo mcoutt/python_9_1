@@ -1,0 +1,92 @@
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git remote show origin 
+* remote origin
+  Fetch URL: git@github.com:mcoutt/python_9_1.git
+  Push  URL: git@github.com:mcoutt/python_9_1.git
+  HEAD branch: master
+  Remote branches:
+    AnatolyKiev             tracked
+    BlagodarHW              tracked
+    Bogdan_s                tracked
+    Bondarenko_Vladislav    tracked
+    ElenaKorenieva-04-06-19 tracked
+    ElenaKorenieva040619    tracked
+    HW                      tracked
+    HomeWork                tracked
+    Roman#1                 tracked
+    TpaxTu6ugox             tracked
+    dev                     tracked
+    for_common_data         tracked
+    home_tasks              tracked
+    master                  tracked
+    vasichkin               tracked
+  Local branches configured for 'git pull':
+    AnatolyKiev merges with remote AnatolyKiev
+    dev         merges with remote dev
+    master      merges with remote master
+  Local refs configured for 'git push':
+    AnatolyKiev pushes to AnatolyKiev (up to date)
+    dev         pushes to dev         (up to date)
+    master      pushes to master      (up to date)
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git branch -a
+* AnatolyKiev
+  dev
+  master
+  remotes/origin/AnatolyKiev
+  remotes/origin/BlagodarHW
+  remotes/origin/Bogdan_s
+  remotes/origin/Bondarenko_Vladislav
+  remotes/origin/ElenaKorenieva-04-06-19
+  remotes/origin/ElenaKorenieva040619
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/HW
+  remotes/origin/HomeWork
+  remotes/origin/Roman#1
+  remotes/origin/TpaxTu6ugox
+  remotes/origin/dev
+  remotes/origin/for_common_data
+  remotes/origin/home_tasks
+  remotes/origin/master
+  remotes/origin/vasichkin
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git push origin AnatolyKiev 
+Counting objects: 13, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 516 bytes | 0 bytes/s, done.
+Total 4 (delta 0), reused 0 (delta 0)
+To git@github.com:mcoutt/python_9_1.git
+   1e40d7f..cba3883  AnatolyKiev -> AnatolyKiev
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git checkout master 
+Switched to branch 'master'
+Your branch is behind 'origin/master' by 6 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (master)$ git status 
+On branch master
+Your branch is behind 'origin/master' by 6 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	deleted:    AnatolyKiev/game_noliki.py
+	deleted:    AnatolyKiev/show_about_environ.py
+	deleted:    AnatolyKiev/show_about_pip.py
+	deleted:    AnatolyKiev/task_stroka_popolam.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git branch -vv
+* AnatolyKiev cba3883 [origin/AnatolyKiev] Clear my branch. Dell folder and move file
+  dev         b98b257 [origin/dev] smile change
+  master      ba97256 [origin/master] Merge branch 'master' of github.com:mcoutt/python_9_1
+
+
