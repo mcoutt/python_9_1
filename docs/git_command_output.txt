@@ -90,3 +90,59 @@ anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git branch -vv
   master      ba97256 [origin/master] Merge branch 'master' of github.com:mcoutt/python_9_1
 
 
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git fetch origin 
+remote: Enumerating objects: 26, done.
+remote: Counting objects: 100% (26/26), done.
+remote: Compressing objects: 100% (20/20), done.
+remote: Total 26 (delta 9), reused 9 (delta 2), pack-reused 0
+Unpacking objects: 100% (26/26), done.
+From github.com:mcoutt/python_9_1
+   1c7b574..b2426d3  AnatolyKiev -> origin/AnatolyKiev
+ * [new branch]      Roman_001  -> origin/Roman_001
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git status 
+On branch AnatolyKiev
+Your branch is behind 'origin/AnatolyKiev' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+nothing to commit, working directory clean
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git pull
+Updating 1c7b574..b2426d3
+Fast-forward
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git show 1c7b574
+commit 1c7b574fffb966f2a93bea7843e4f4733ceca8af
+Merge: 61fb6a9 592bd46
+Author: AnatolyKiev <anatoly.067392@gmail.com>
+Date:   Wed Jun 5 14:01:59 2019 +0300
+
+    Merge branch 'AnatolyKiev' of github.com:mcoutt/python_9_1 into AnatolyKiev
+    
+    Ok
+
+anatoly@work:~/Private/GitHub/python_9_1 (AnatolyKiev)$ git show b2426d3
+commit b2426d32f21d7af2fe025cd9951a71d6c4414d7b
+Author: Anatoly <51201729+AnatolyKiev@users.noreply.github.com>
+Date:   Wed Jun 5 14:16:56 2019 +0300
+
+    Update README.md
+
+diff --git a/README.md b/README.md
+index 4d1d1ec..ec86ec4 100644
+--- a/README.md
++++ b/README.md
+@@ -2,7 +2,7 @@
+ 
+ **Важно!** Коллеги, просьба по возможности ничего сюда не пушить, это моя песочница.
+ 
+-Список того что есть:
++Список того, что есть:
+ + my_home_tasks - папка для домашек, тут я буду их хранить
+ + docs - для всяких док, туториалов (по командам)
+ + utils - папка для всяких утилит
+
