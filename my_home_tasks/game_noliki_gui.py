@@ -1,26 +1,261 @@
 """
-Игра "Крестики-нолики".
-
-Условия игры:
-1. Пользователь должен выбрать игроков и нажать кнопку Start.
-2. Пользователь кликает по любому свободному полю
-3.1. Если игра с компьютером - он делает ход и показывается куда походил
-3.2. Если игра с другим игроком - он должен сделать ход
-Алгоритм повторяется пока
-А. Или заканчиваются свободные поля
-Б. Кто-то выигрывает - Вы или компьютер / второй игрок
-
-Особенности реализации: компьютер играет по-умному.
-1. Он первым своим ходом пытается занять центр поля.
-2. Он старается предсказать ваше выигрышное поле и занять его.
-3. Он ищет свои выигрышные поля и если такие есть - ходит туда.
+Рисуем окно программы с помощью tkinter (стандартный модуль).
+Что есть в налиции:
+Два класса - FieldButton и App.
+Функции для работы с окном и меню.
 """
 import tkinter as tk
 from tkinter import messagebox as mb
 import random
 
 
-def about_game():
+class FieldButton():
+    """Это класс для полей (кнопок) с крестиками/ноликами."""
+
+    def __init__(self, reg_field, field_num, x, y):
+        """Что делаем при инициализации класса."""
+        self.field_num = field_num
+        self.field_check = field_num
+        self.field_text = ''
+        self.field = tk.Button(reg_field, text=self.field_text, bd=0)
+        self.field.bind('<Button-1>', self.field_change)
+        self.field.place(x=x, y=y, width=110, height=110)
+
+    def field_change(self, event):
+        """Функция чтобы изменить поле."""
+        self.field.config(state="disabled")
+        if self.field["text"] == '':
+            self.field["text"] = game_noliki.xo_go
+            self.field_text = game_noliki.xo_go
+            self.field_check = game_noliki.xo_go
+            game_noliki.msg_info.configure(text="{0} makes move {1} -> {2}".format(game_noliki.user_go, game_noliki.xo_go, self.field_num))
+            game_noliki.msg_result.config(text=game_noliki.free_field())
+            if game_noliki.check_win():
+                game_noliki.msg_result.configure(text=game_noliki.check_win())
+                game_over(game_noliki.check_win())
+            else:
+                game_noliki.change_move()
+                if game_noliki.users == 1:
+                    game_noliki.comp_move()
+
+    def field_disabled(self):
+        """Функция чтобы отключить поле."""
+        self.field.config(text="*")
+        self.field.config(state="disabled")
+
+    def comp_step(self):
+        self.field.config(state="disabled")
+        self.field["text"] = game_noliki.xo_go
+        self.field_text = game_noliki.xo_go
+        self.field_check = game_noliki.xo_go
+        game_noliki.msg_info.configure(text="{0} makes move {1} -> {2}".format(game_noliki.user_go, game_noliki.xo_go, self.field_num))
+        game_noliki.msg_result.config(text=game_noliki.free_field())
+
+
+class App:
+    """Это класс с данными программы, если нужно будет их обнулить."""
+
+    def __init__(self, root):
+        """Что делаем при инициализации класса."""
+        self.root = root
+        self.app_create()
+        self.app_db()
+        self.add_region_start()
+        self.add_canvas()
+        self.add_region_info()
+
+    def app_reset(self):
+        """Обнуляем окно программы программы."""
+        self.app_db()
+        self.frame_start.destroy()
+        self.add_region_start()
+        self.reg_fields.destroy()
+        self.add_canvas()
+        self.frame_info.destroy()
+        self.add_region_info()
+
+    def app_db(self):
+        """Данные программы."""
+        self.user_go = 'You'
+        self.user_wait = ''
+        self.xo = ['X', 'O']
+        self.xo_go = 'X'
+        self.xo_wait = 'O'
+
+    def app_create(self):
+        """Конфигурируем окно программы."""
+        width = 400
+        height = 580
+        # Название и фон
+        self.root.title('Game "Tic-tac-toe"')
+        self.root.configure(background='white')
+        # Размеры экрана
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        # Центрируем положение
+        x = (screen_width / 2) - (width / 2)
+        y = (screen_height / 2) - (height / 1.4)
+        self.root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+        self.root.resizable(False, False)
+        # Меню
+        top_menu = tk.Menu(root)
+        self.root.config(menu=top_menu)
+        top_menu.add_command(label="About", command=game_info)
+        top_menu.add_command(label="Reset", command=game_reset)
+        top_menu.add_command(label="Exit", command=close_win)
+
+    def add_region_start(self):
+        """Выводим верхний блок - кнопка старт - программы."""
+        self.frame_start = tk.Frame(self.root, width=400, height=70, bg="white")
+        self.frame_start.pack()
+        self.gamers = tk.IntVar()
+        self.gamers.set(1)
+        select_gm_1 = tk.Radiobutton(self.frame_start, text='You and Computer', variable=self.gamers, value=1)
+        select_gm_2 = tk.Radiobutton(self.frame_start, text='You an other gamer', variable=self.gamers, value=2)
+        select_gm_1.config(bg='white', highlightbackground='white', activebackground='white')
+        select_gm_2.config(bg='white', highlightbackground='white', activebackground='white')
+        self.btn_start = tk.Button(self.frame_start, text="Start game", command=self.start_game)
+        select_gm_1.place(x=40, y=10)
+        select_gm_2.place(x=40, y=35)
+        self.btn_start.place(x=240, y=15)
+
+    def add_canvas(self):
+        """Выводим средний блок - холст - программы."""
+        self.reg_fields = tk.Frame(self.root, width=400, height=400)
+        self.reg_fields.pack()
+        fields = tk.Canvas(self.reg_fields, width=382, height=382, bg="gray70", bd=0, highlightthickness=0)
+        fields.create_line(135, 24, 135, 358)
+        fields.create_line(246, 24, 246, 358)
+        fields.create_line(24, 135, 358, 135)
+        fields.create_line(24, 247, 358, 247)
+        fields.pack()
+
+    def add_fields(self):
+        """Выводим поля-кнопки на холсте."""
+        field_position = {1: (24, 24), 2: (136, 24), 3: (248, 24),
+                          4: (24, 136), 5: (136, 136), 6: (248, 136),
+                          7: (24, 248), 8: (136, 248), 9: (248, 248)
+                          }
+        self.fields_dict = {}
+        for key, value in field_position.items():
+            self.fields_dict[key] = FieldButton(self.reg_fields, key, value[0], value[1])
+
+    def add_region_info(self):
+        """Выводим нижний блок - инфа - программы."""
+        self.frame_info = tk.Frame(self.root, width=400, height=70, bg="white")
+        self.frame_info.pack()
+        self.msg_rule = tk.Label(self.frame_info, bg="white", bd=10)
+        self.msg_info = tk.Label(self.frame_info, bg="white", bd=0)
+        self.msg_result = tk.Label(self.frame_info, bg="white", bd=10)
+        self.msg_rule.pack()
+        self.msg_rule.configure(text="Choose with whom you will play\nand press button 'Start game'.")
+        self.msg_info.pack()
+        self.msg_result.pack()
+
+    def start_game(self):
+        """Запуск программы по кнопке Старт."""
+        if self.gamers.get() == 1:
+            self.user_wait = 'Computer'
+            self.users = 1
+        else:
+            self.user_wait = 'User 1'
+            self.users = 2
+        self.msg_rule.configure(text="Beginning of the game. You and {}.".format(self.user_wait))
+        self.msg_info.configure(text="Click on the field if you want to put 'X' or 'O' there.")
+        self.btn_start["state"] = "disabled"
+        self.add_fields()
+
+    def change_move(self):
+        """Меняем игроков."""
+        self.xo_go, self.xo_wait = self.xo_wait, self.xo_go
+        self.user_go, self.user_wait = self.user_wait, self.user_go
+
+    def free_field(self):
+        """Ищем свободные поля для записи."""
+        return [x.field_num for x in self.fields_dict.values() if x.field_text == '']
+
+    def win_list(self):
+        """Проверка выигрышных комбинаций или кол-ва свободных полей."""
+        # Есть 8 выигрышных комбинаций - 3 по горизонтали, 3 по вертикали и крест
+        xy = self.fields_dict  # Для краткости записи
+        win_list = [[xy[1].field_check, xy[2].field_check, xy[3].field_check],
+                    [xy[4].field_check, xy[5].field_check, xy[6].field_check],
+                    [xy[7].field_check, xy[8].field_check, xy[9].field_check],
+                    [xy[1].field_check, xy[4].field_check, xy[7].field_check],
+                    [xy[2].field_check, xy[5].field_check, xy[8].field_check],
+                    [xy[3].field_check, xy[6].field_check, xy[9].field_check],
+                    [xy[1].field_check, xy[5].field_check, xy[9].field_check],
+                    [xy[3].field_check, xy[5].field_check, xy[7].field_check]
+                    ]
+        return win_list
+
+    def check_win(self):
+        """Проверка выигрышных комбинаций или кол-ва свободных полей."""
+        # Если есть хоть одна выигрышная комбинация, тогда...
+        for win in self.win_list():
+            if win.count(self.xo_go) == 3:
+                for x in self.free_field():
+                    self.fields_dict[x].field_disabled()
+                return ("Winner {}. Game over.".format(self.user_go))
+
+        # Если выигрышных комбинаций нет и закончились свободные ячейки, тогда...
+        if len(self.free_field()) == 0:
+            return ("No winner. Game over.")
+
+    def random_field(self):
+        """Случайный выбор поля компьютером."""
+        return random.choice(self.free_field())
+
+    def predict_win(self, xo=None):
+        """Предсказать выигрышное поле."""
+        # Перебираем список выигрышных комбинаций
+        for win in self.win_list():
+            # Ищем комбинацию, где уже два поля заполнены, если такое есть
+            if win.count(xo) == 2:
+                for x in win:
+                    # Ищем цифру и выводим её
+                    if isinstance(x, int):
+                        return x
+
+    def effective_step(self):
+        """Стараемся делать эффективные ходы, хотя и рандомайзом."""
+        free_fields = self.free_field()
+        if len(free_fields) > 7:
+            # Компьютеру нужно сделать свой первый ход, стараемся занять центр
+            if 5 in free_fields:
+                return 5
+            else:
+                return self.random_field()
+        elif len(free_fields) > 5:
+            # Компьютеру нужно сделать второй ход
+            # 1. Пробуем мешать сопернику, предсказав его выигрышное поле
+            # 2. Если такого нет - делаем случайный ход
+            if self.predict_win(self.xo_wait):
+                return self.predict_win(self.xo_wait)
+            else:
+                return self.random_field()
+        else:
+            # Компьютеру нужно сделать остальные ходы
+            # 1. Ищем своё выигрышное поле
+            # 2. Пробуем мешать сопернику, предсказав его выигрышное поле
+            # 3. Если такого нет - делаем случайный ход
+            if self.predict_win(self.xo_go):
+                return self.predict_win(self.xo_go)
+            elif self.predict_win(self.xo_wait):
+                return self.predict_win(self.xo_wait)
+            else:
+                return self.random_field()
+
+    def comp_move(self):
+        self.fields_dict[self.effective_step()].comp_step()
+        if self.check_win():
+            self.msg_result.configure(text=self.check_win())
+            game_over(self.check_win())
+        else:
+            self.change_move()
+
+
+def game_info():
     """Показываем информацию об игре."""
     output = "\nChoose with whom you will play and press button 'Start game'.\n"
     output += "\nClick on the field if you want to put 'X' or 'O' there.\n"
@@ -32,6 +267,13 @@ def game_over(info):
     mb.showinfo(title="Result", message=info)
 
 
+def game_reset():
+    """Сброс игры."""
+    answer = mb.askyesno(title="Reset", message="Reset the game?")
+    if answer is True:
+        App.app_reset(game_noliki)
+
+
 def close_win():
     """Корректное закрытие окна программы."""
     answer = mb.askyesno(title="Exit", message="Close the program?")
@@ -39,257 +281,7 @@ def close_win():
         root.destroy()
 
 
-def config_win(width=500, height=500):
-    """Конфигурируем окно программы."""
-    # Название и фон
-    root.title('Game "Tic-tac-toe"')
-    root.configure(background='white')
-    # Размеры экрана
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    # Центрируем положение
-    x = (screen_width / 2) - (width / 2)
-    y = (screen_height / 2) - (height / 1.4)
-    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
-    # root.iconbitmap('icon.ico')
-    root.resizable(False, False)
-
-    # Меню
-    top_menu = tk.Menu(root)
-    # окно конфигурируется с указанием меню для него
-    root.config(menu=top_menu)
-    # формируется список команд пункта меню
-    top_menu.add_command(label="About", command=about_game)
-    top_menu.add_command(label="Exit", command=close_win)
-
-
-def init_data():
-    """Исходные данные."""
-    global db_fields
-    # global gamers_list
-    global user_go
-    global user_wait
-    global xo
-    global xo_go
-    global xo_wait
-    # Словарь с параметрами игрового поля: key: [(x, y), number_field]
-    db_fields = {1: [(24, 24), 1], 2: [(136, 24), 2], 3: [(248, 24), 3],
-                 4: [(24, 136), 4], 5: [(136, 136), 5], 6: [(248, 136), 6],
-                 7: [(24, 248), 7], 8: [(136, 248), 8], 9: [(248, 248), 9]
-                 }
-
-    user_go = 'You'
-    user_wait = ''
-    xo = ['X', 'O']
-    xo_go = xo[0]
-    xo_wait = xo[1]
-
-
-def change_move():
-    """Меняем игроков."""
-    global xo_go
-    global xo_wait
-    global user_go
-    global user_wait
-    xo_go, xo_wait = xo_wait, xo_go
-    user_go, user_wait = user_wait, user_go
-
-
-def start_game():
-    """Запуск программы по кнопке Старт."""
-    global users
-    global user_wait
-    if gamers.get() == 1:
-        user_wait = 'Computer'
-        users = 1
-    else:
-        user_wait = 'User 1'
-        users = 2
-    msg_rule.configure(text="Beginning of the game. You and {}.".format(user_wait))
-    msg_info.configure(text="Click on the field if you want to put 'X' or 'O' there.")
-    btn_start["state"] = "disabled"
-
-
-def free_field():
-    """Ищем свободные поля для записи."""
-    return [x[1] for x in db_fields.values() if x[1] in range(1, 10)]
-
-
-def random_field():
-    """Случайный выбор поля компьютером."""
-    return random.choice(free_field())
-
-
-def predict_win(xo=None):
-    """Предсказать выигрышное поле."""
-    # Есть 8 выигрышных комбинаций - 3 по горизонтали, 3 по вертикали и крест
-    xy = db_fields  # Для краткости записи
-    win_list = [[xy[1][1], xy[2][1], xy[3][1]],
-                [xy[4][1], xy[5][1], xy[6][1]],
-                [xy[7][1], xy[8][1], xy[9][1]],
-                [xy[1][1], xy[4][1], xy[7][1]],
-                [xy[2][1], xy[5][1], xy[8][1]],
-                [xy[3][1], xy[6][1], xy[9][1]],
-                [xy[1][1], xy[5][1], xy[9][1]],
-                [xy[3][1], xy[5][1], xy[7][1]]
-                ]
-
-    # Перебираем список выигрышных комбинаций
-    for win in win_list:
-        # Ищем комбинацию, где уже два поля заполнены, если такое есть
-        if win.count(xo) == 2:
-            for x in win:
-                # Ищем цифру и выводим её
-                if isinstance(x, int):
-                    return x
-
-
-def effective_step():
-    """Стараемся делать эффективные ходы, хотя и рандомайзом."""
-    free_fields = free_field()
-    if len(free_fields) > 7:
-        # Компьютеру нужно сделать свой первый ход, стараемся занять центр
-        if 5 in free_fields:
-            return 5
-        else:
-            return random_field()
-    elif len(free_fields) > 5:
-        # Компьютеру нужно сделать второй ход
-        # 1. Пробуем мешать сопернику, предсказав его выигрышное поле
-        # 2. Если такого нет - делаем случайный ход
-        if predict_win(xo_wait):
-            return predict_win(xo_wait)
-        else:
-            return random_field()
-    else:
-        # Компьютеру нужно сделать остальные ходы
-        # 1. Ищем своё выигрышное поле
-        # 2. Пробуем мешать сопернику, предсказав его выигрышное поле
-        # 3. Если такого нет - делаем случайный ход
-        if predict_win(xo_go):
-            return predict_win(xo_go)
-        elif predict_win(xo_wait):
-            return predict_win(xo_wait)
-        else:
-            return random_field()
-
-
-def rewrite_field(f_index=None, f_value=None):
-    """Перезаписываем поле по индексу (номеру в таблице), нужным значением."""
-    for key, value in db_fields.items():
-        if value[1] == f_index:
-            value[1] = f_value
-
-
-def check_win():
-    """Проверка выигрышных комбинаций или кол-ва свободных полей."""
-    # Есть 8 выигрышных комбинаций - 3 по горизонтали, 3 по вертикали и крест
-    xy = db_fields  # Для краткости записи
-    win_list = [[xy[1][1], xy[2][1], xy[3][1]],
-                [xy[4][1], xy[5][1], xy[6][1]],
-                [xy[7][1], xy[8][1], xy[9][1]],
-                [xy[1][1], xy[4][1], xy[7][1]],
-                [xy[2][1], xy[5][1], xy[8][1]],
-                [xy[3][1], xy[6][1], xy[9][1]],
-                [xy[1][1], xy[5][1], xy[9][1]],
-                [xy[3][1], xy[5][1], xy[7][1]]
-                ]
-
-    # Если есть хоть одна выигрышная комбинация, тогда...
-    for win in win_list:
-        if win.count(xo_go) == 3:
-            for x in free_field():
-                field_buttons[x].field_disabled()
-            return ("Winner {}. Game over.".format(user_go))
-
-    # Если выигрышных комбинаций нет и закончились свободные ячейки, тогда...
-    if len(free_field()) == 0:
-        return ("No winner. Game over.")
-
-
-def comp_click():
-    field_buttons[effective_step()].comp_step()
-    if check_win():
-        msg_result.configure(text=check_win())
-        game_over(check_win())
-    else:
-        change_move()
-
-
-class FieldButton:
-    def __init__(self, f_x, f_y, f_num):
-        self.f_num = f_num
-        self.field = tk.Button(reg_field, text='', bd=0)
-        self.field.bind('<Button-1>', self.field_change)
-        self.field.place(x=f_x, y=f_y, width=110, height=110)
-
-    def comp_step(self):
-        self.field.config(state="disabled")
-        rewrite_field(self.f_num, xo_go)
-        self.field.config(text=xo_go)
-        msg_info.configure(text="{0} makes move {1} -> {2}".format(user_go, xo_go, self.f_num))
-
-    def field_change(self, event):
-        if btn_start["state"] == "disabled":
-            self.field.config(state="disabled")
-            if self.field["text"] == '':
-                rewrite_field(self.f_num, xo_go)
-                msg_info.configure(text="{0} makes move {1} -> {2}".format(user_go, xo_go, self.f_num))
-                self.field["text"] = xo_go
-                if check_win():
-                    msg_result.configure(text=check_win())
-                    game_over(check_win())
-                else:
-                    change_move()
-                    if users == 1:
-                        comp_click()
-
-    def field_disabled(self):
-        self.field.config(text="*")
-        self.field.config(state="disabled")
-
-
-# Инициалищируем включение данных по игре
-init_data()
-# Начинаем рисовать окно программы
-root = tk.Tk()
-config_win(400, 550)
-
-reg_start = tk.Frame(root, width=400, height=65, bg="white")
-gamers = tk.IntVar()
-gamers.set(1)
-select_gm_1 = tk.Radiobutton(reg_start, text='You and Computer', variable=gamers, value=1)
-select_gm_2 = tk.Radiobutton(reg_start, text='You an other gamer', variable=gamers, value=2)
-select_gm_1.config(bg='white', highlightbackground='white', activebackground='white')
-select_gm_2.config(bg='white', highlightbackground='white', activebackground='white')
-btn_start = tk.Button(reg_start, text="Start game", command=start_game)
-reg_start.pack()
-btn_start.place(x=240, y=15)
-select_gm_1.place(x=40, y=7)
-select_gm_2.place(x=40, y=35)
-
-reg_field = tk.Frame(root, width=400, height=400)
-fields = tk.Canvas(reg_field, width=382, height=382, bg="gray70", bd=0, highlightthickness=0)
-fields.create_line(135, 24, 135, 358)
-fields.create_line(246, 24, 246, 358)
-fields.create_line(24, 135, 358, 135)
-fields.create_line(24, 247, 358, 247)
-reg_field.pack()
-fields.pack()
-field_buttons = {}
-for x in db_fields.values():
-    field_buttons[x[1]] = FieldButton(x[0][0], x[0][1], x[1])
-
-reg_messg = tk.Frame(root, width=400, bg="white")
-msg_rule = tk.Label(reg_messg, bg="white", bd=10)
-msg_info = tk.Label(reg_messg, bg="white", bd=0)
-msg_result = tk.Label(reg_messg, bg="white", bd=10)
-reg_messg.pack()
-msg_rule.pack()
-msg_rule.configure(text="Choose with whom you will play\nand press button 'Start game'.")
-msg_info.pack()
-msg_result.pack()
-
-root.mainloop()
-
-# The END / Конец.
+if __name__ == '__main__':
+    root = tk.Tk()
+    game_noliki = App(root)
+    root.mainloop()
